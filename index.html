@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<!-- Ganti bahasa ke 'en' dan aktifkan dark mode via class -->
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Judul di-update untuk mencerminkan multi-bidang -->
+    <title>Gerry Filiestianto | Multi-Disciplinary Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Script konfigurasi Tailwind untuk Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Menggunakan 'class' strategy
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    // Palet warna-warni
+                    colors: {
+                        'theme-teal': {
+                            DEFAULT: '#0d9488', // teal-600
+                            light: '#ccfbf1',  // teal-100
+                            dark: '#115e59',   // teal-800
+                            textLight: '#134e4a', // teal-900
+                            textDark: '#99f6e4',  // teal-200
+                        },
+                        'theme-sky': {
+                            DEFAULT: '#0ea5e9', // sky-500
+                            light: '#e0f2fe',  // sky-100
+                            dark: '#075985',   // sky-800
+                            textLight: '#0c4a6e', // sky-900
+                            textDark: '#bae6fd',  // sky-200
+                        },
+                        'theme-amber': {
+                            DEFAULT: '#f59e0b', // amber-500
+                            light: '#fef3c7',  // amber-100
+                            dark: '#92400e',   // amber-800
+                            textLight: '#78350f', // amber-900
+                            textDark: '#fde68a',  // amber-200
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Kontainer utama untuk slide */
+        .slide-deck {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f8fafc; /* Latar belakang light mode */
+        }
+        .dark .slide-deck {
+            background-color: #030712; /* Latar belakang dark mode */
+        }
+
+        /* Style untuk setiap slide */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(100%); /* Mulai dari kanan */
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+        }
+        
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0); /* Masuk ke tengah */
+        }
+
+        .slide.exiting {
+            opacity: 0;
+            transform: translateX(-100%); /* Keluar ke kiri */
+        }
+
+        /* Pola grid kustom */
+        .grid-pattern {
+            background-image:
+                linear-gradient(to right, rgba(203, 213, 225, 0.5) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(203, 213, 225, 0.5) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dark .grid-pattern {
+            background-image:
+                linear-gradient(to right, rgba(55, 65, 81, 0.7) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(55, 65, 81, 0.7) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Tombol Navigasi */
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #334155;
+            border-radius: 9999px;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .nav-button:hover {
+            background-color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .dark .nav-button {
+            background-color: rgba(31, 41, 55, 0.8);
+            color: #e5e7eb;
+        }
+        .dark .nav-button:hover {
+            background-color: #1f2937;
+        }
+        .nav-button:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        #prev-slide { left: 1.5rem; }
+        #next-slide { right: 1.5rem; }
+
+        /* Slide Counter */
+        .slide-counter {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background-color: rgba(17, 24, 39, 0.7);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Dark mode toggle */
+        #theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #334155;
+            border-radius: 9999px;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .dark #theme-toggle {
+            background-color: rgba(31, 41, 55, 0.8);
+            color: #e5e7eb;
+        }
+        
+        /* === STYLE MODAL (POP-UP) === */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            position: relative;
+            z-index: 10;
+            background-color: white;
+            color: #334155;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            width: 90%;
+            max-width: 56rem; /* Diperlebar untuk konten multi-bidang */
+            height: 85vh; /* Ditinggikan untuk konten multi-bidang */
+            overflow-y: auto; /* KONTEN BISA DI-SCROLL */
+        }
+        .dark .modal-content {
+            background-color: #1f2937; /* gray-800 */
+            color: #d1d5db; /* gray-300 */
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: #e5e7eb;
+            color: #4b5563;
+            border-radius: 9999px;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dark .modal-close-button {
+            background-color: #374151; /* gray-700 */
+            color: #e5e7eb; /* gray-200 */
+        }
+        /* Custom scrollbar untuk modal */
+        .modal-content::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-track { background: #f1f5f9; }
+        .dark .modal-content::-webkit-scrollbar-track { background: #374151; }
+        .modal-content::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        .dark .modal-content::-webkit-scrollbar-thumb { background: #4b5563; }
+        
+        /* Style untuk timeline di dalam modal */
+        .modal-timeline-item { position: relative; padding-left: 2rem; padding-bottom: 1.5rem; }
+        .modal-timeline-item:last-child { padding-bottom: 0; }
+        .modal-timeline-line { position: absolute; left: 0.375rem; top: 0.5rem; bottom: -0.5rem; width: 2px; }
+        .modal-timeline-item:last-child .modal-timeline-line { display: none; }
+        .modal-timeline-icon { position: absolute; left: 0; top: 0.25rem; width: 1rem; height: 1rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+        
+        /* === Style GRADIENT TEXT BARU === */
+        .colorful-gradient-text {
+            @apply bg-gradient-to-r from-theme-teal-DEFAULT to-theme-sky-DEFAULT bg-clip-text text-transparent;
+        }
+        .dark .colorful-gradient-text {
+            @apply from-theme-teal-textDark to-theme-sky-textDark;
+        }
+
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Kontainer Deck Utama -->
+    <div class="slide-deck dark:bg-gray-900">
+
+        <!-- Slide 1: Judul/Home (Colorful Gradient) -->
+        <div class="slide active grid-pattern">
+            <div class="text-center">
+                <!-- INGAT: Ganti 'src' ini dengan 'images/foto-profil.jpg' setelah Anda menguploadnya -->
+                <img src="images/foto-profil.jpg" alt="Gerry Filiestianto" class="w-48 h-48 md:w-64 md:h-64 object-cover rounded-full shadow-2xl border-8 border-white dark:border-gray-800 mx-auto">
+                <!-- JUDUL DENGAN GRADIENT -->
+                <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mt-6">
+                    <span class="colorful-gradient-text">
+                        Gerry Filiestianto
+                    </span>
+                </h1>
+                <p class="text-xl md:text-2xl font-medium text-gray-800 dark:text-gray-200 mt-2">
+                    Multi-Disciplinary Professional
+                </p>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mt-4 max-w-2xl mx-auto">
+                    Education Researcher | Data Analyst | Curriculum Specialist | Corporate Leader
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 2: About Me (Colorful Badges Multi-Bidang) -->
+        <div class="slide">
+            <div class="max-w-4xl mx-auto text-center">
+                <!-- JUDUL DENGAN GRADIENT -->
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 dark:text-white">
+                    <span class="colorful-gradient-text">About Me</span>
+                </h2>
+                <p class="text-lg text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl mx-auto">
+                    A dynamic professional with a Master of Education, blending deep expertise in academic research with proven experience in corporate sales, HR, and IT. Adept at translating complex data into actionable strategies for both educational and business success.
+                </p>
+                <div class="mt-10">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Core Skills</h3>
+                    <!-- BADGE WARNA-WARNI Multi-Bidang -->
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span class="bg-theme-teal-light text-theme-teal-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-teal-dark dark:text-theme-teal-textDark">Educational Research</span>
+                        <span class="bg-theme-sky-light text-theme-sky-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-sky-dark dark:text-theme-sky-textDark">Data Analysis</span>
+                        <span class="bg-theme-amber-light text-theme-amber-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-amber-dark dark:text-theme-amber-textDark">Curriculum Design</span>
+                        <span class="bg-theme-teal-light text-theme-teal-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-teal-dark dark:text-theme-teal-textDark">Mixed-Methods</span>
+                        <span class="bg-theme-sky-light text-theme-sky-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-sky-dark dark:text-theme-sky-textDark">Project Management</span>
+                        <span class="bg-theme-amber-light text-theme-amber-textLight text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-theme-amber-dark dark:text-theme-amber-textDark">Sales & Strategy</span>
+                        <span class="bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-gray-700 dark:text-gray-200">HR & Onboarding</span>
+                        <span class="bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full shadow-sm dark:bg-gray-700 dark:text-gray-200">IT Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Education (Dengan 3 Foto Placeholder - TATA LETAK BARU) -->
+        <div class="slide">
+            <div class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Teks -->
+                <div class="text-left">
+                    <!-- JUDUL DENGAN GRADIENT -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 dark:text-white">
+                        <span class="colorful-gradient-text">Education</span>
+                    </h2>
+                    <!-- Master's -->
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-theme-teal-DEFAULT dark:text-theme-teal-textDark">Master of Education (M.Ed)</h3>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">Universitas Pendidikan Indonesia</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">2023 - 2025</p>
+                    </div>
+                    <!-- Bachelor's -->
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-theme-teal-DEFAULT dark:text-theme-teal-textDark">Bachelor of Education (B.Ed)</h3>
+                        <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">IKIP Siliwangi</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">2017 - 2022</p>
+                    </div>
+                    <!-- TOMBOL MODAL -->
+                    <button id="open-edu-modal" class="px-5 py-3 bg-theme-teal-DEFAULT text-white font-semibold rounded-lg shadow-md hover:bg-theme-teal-dark transition-colors dark:bg-theme-teal-dark dark:hover:bg-theme-teal-DEFAULT">
+                        Show Education Details
+                    </button>
+                </div>
+                <!-- === GALERI 3 FOTO (Layout Baru) === -->
+                <!-- INGAT: Ganti 'src' placeholder ini dengan 'images/nama-foto.jpg' -->
+                <div class="grid grid-cols-2 grid-rows-2 gap-4 h-96">
+                    <!-- Foto Utama (Tinggi) -->
+                    <div class="col-span-1 row-span-2">
+                        <img src="images/foto-kampus-1.jpg" 
+                             alt="Main education placeholder" 
+                             class="w-full h-full object-cover rounded-lg shadow-lg"> <!-- h-full untuk mengisi space -->
+                    </div>
+                    <!-- Foto Tambahan 1 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-kampus-2.jpg" 
+                             alt="Education placeholder 2" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full untuk mengisi space -->
+                    </div>
+                    <!-- Foto Tambahan 2 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-kampus-3.jpg" 
+                             alt="Education placeholder 3" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full untuk mengisi space -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Experience (Dengan 3 Foto Placeholder - TATA LETAK BARU) -->
+        <div class="slide">
+            <div class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- === GALERI 3 FOTO (di kiri) (Layout Baru) === -->
+                <!-- INGAT: Ganti 'src' placeholder ini dengan 'images/nama-foto.jpg' -->
+                <div class="grid grid-cols-2 grid-rows-2 gap-4 h-96 md:order-1">
+                    <!-- Foto Utama (Tinggi) -->
+                    <div class="col-span-1 row-span-2">
+                        <img src="images/foto-pengalaman-1.jpg" 
+                             alt="Main experience placeholder" 
+                             class="w-full h-full object-cover rounded-lg shadow-lg"> <!-- h-full -->
+                    </div>
+                    <!-- Foto Tambahan 1 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-pengalaman-2.jpg" 
+                             alt="Experience placeholder 2" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full -->
+                    </div>
+                    <!-- Foto Tambahan 2 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-pengalaman-3.jpg" 
+                             alt="Experience placeholder 3" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full -->
+                    </div>
+                </div>
+                <!-- Teks (di kanan) -->
+                <div class="text-left md:order-2">
+                    <!-- JUDUL DENGAN GRADIENT -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 dark:text-white">
+                        <span class="colorful-gradient-text">Experience</span>
+                    </h2>
+                    <!-- Ringkasan Tampilan Slide -->
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Research & Academic</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Junior Research Fellow, Peer Reviewer, Maths Expert</p>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Corporate & Technical</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Sales Supervisor, Software Developer, IT Support</p>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Leadership & HR</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Head of Dept (BEM), HR Management Specialist</p>
+                    </div>
+                    <!-- TOMBOL MODAL -->
+                    <div class="mt-8">
+                        <button id="open-exp-modal" class="px-5 py-3 bg-theme-sky-DEFAULT text-white font-semibold rounded-lg shadow-md hover:bg-theme-sky-dark transition-colors dark:bg-theme-sky-dark dark:hover:bg-theme-sky-DEFAULT">
+                            Show Full Experience Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Activities (Dengan 3 Foto Placeholder - TATA LETAK BARU) -->
+        <div class="slide">
+            <div class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Teks -->
+                <div class="text-left">
+                    <!-- JUDUL DENGAN GRADIENT -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8 dark:text-white">
+                        <span class="colorful-gradient-text">Activities & Leadership</span>
+                    </h2>
+                    <ul class="list-disc list-outside ml-5 text-lg text-gray-700 dark:text-gray-300 space-y-4">
+                        <li>Led a training workshop on <strong>Scratch programming</strong> for 50 mathematics teachers.</li>
+                        <li>Served as <strong>Head of the Internal Department</strong> for the Student Executive Board (BEM).</li>
+                        <li>Recognized as <strong>1st Winner of Most Outstanding Student</strong> at IKIP Siliwangi (2020).</li>
+                        <li>Active <strong>moderator and speaker</strong> in various scientific forums and workshops.</li>
+                    </ul>
+                </div>
+                <!-- === GALERI 3 FOTO (Layout Baru) === -->
+                <!-- INGAT: Ganti 'src' placeholder ini dengan 'images/nama-foto.jpg' -->
+                <div class="grid grid-cols-2 grid-rows-2 gap-4 h-96">
+                    <!-- Foto Utama (Tinggi) -->
+                    <div class="col-span-1 row-span-2">
+                        <img src="images/foto-kegiatan-1.jpg" 
+                             alt="Main activity placeholder" 
+                             class="w-full h-full object-cover rounded-lg shadow-lg"> <!-- h-full -->
+                    </div>
+                    <!-- Foto Tambahan 1 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-kegiatan-2.jpg" 
+                             alt="Activity placeholder 2" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full -->
+                    </div>
+                    <!-- Foto Tambahan 2 (Kecil) -->
+                    <div class="col-span-1 row-span-1">
+                        <img src="images/foto-kegiatan-3.jpg" 
+                             alt="Activity placeholder 3" 
+                             class="w-full h-full object-cover rounded-lg shadow-md"> <!-- h-full -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Works (Dengan Tombol Detail & Colorful) -->
+        <div class="slide">
+            <div class="max-w-6xl w-full mx-auto">
+                <!-- JUDUL DENGAN GRADIENT -->
+                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12 dark:text-white">
+                    <span class="colorful-gradient-text">Works & Achievements</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Publikasi (Aksen Teal) -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 dark:text-white">Featured Publications</h3>
+                        <div class="space-y-4">
+                            <div class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-theme-teal-DEFAULT">
+                                <p class="font-semibold text-theme-teal-textLight dark:text-theme-teal-textDark">MENGUNGKAP KOMPLEKSITAS KAUSAL: TINJAUAN SISTEMATIS DAN KRITIK TERHADAP PENDEKATAN LINEAR DALAM PENELITIAN PRESTASI MATEMATIKA</p>
+                            </div>
+                            <div class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-theme-teal-DEFAULT">
+                                <p class="font-semibold text-theme-teal-textLight dark:text-theme-teal-textDark">EKSPLORASI ETNOMATEMATIKA RUMAH PANGGUNG BETAWI SI PITUNG DALAM PANDANGAN AKTIVITAS FUNDAMENTAL MATEMATIS BISHOP</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Penghargaan (Aksen Sky Blue) -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6 dark:text-white">Top Awards</h3>
+                        <div class="space-y-4">
+                            <div class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-theme-sky-DEFAULT">
+                                <p class="font-semibold text-theme-sky-textLight dark:text-theme-sky-textDark">3rd Winner of National Mathematics Learning Media Competitions @ GMM UPI 2018</p>
+                            </div>
+                            <div class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 border-theme-sky-DEFAULT">
+                                <p class="font-semibold text-theme-sky-textLight dark:text-theme-sky-textDark">2nd Runner Up of National Mathematics Learning Media Competition @ LMPCPM UNNES 2019 </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- TOMBOL MODAL -->
+                <div class="text-center mt-12">
+                    <button id="open-works-modal" class="px-5 py-3 bg-gray-700 text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700">
+                        Show All Works, Awards & Certifications
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Kontak -->
+        <div class="slide grid-pattern">
+            <div class="text-center">
+                <!-- JUDUL DENGAN GRADIENT -->
+                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
+                    <span class="colorful-gradient-text">Let's Connect</span>
+                </h2>
+                <p class="text-lg text-gray-700 dark:text-gray-300 mt-4 max-w-lg mx-auto">
+                    I'm currently seeking new opportunities. Feel free to reach out for collaborations or inquiries.
+                </p>
+                <div class="mt-10 flex justify-center space-x-6">
+                    <!-- Email -->
+                    <a href="mailto:gerry.filiestianto@gmail.com" class="text-gray-600 hover:text-theme-teal-DEFAULT dark:text-gray-400 dark:hover:text-theme-teal-textDark transition-colors" aria-label="Email">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"></path></svg>
+                    </a>
+                    <!-- LinkedIn -->
+                    <a href="https://www.linkedin.com/in/mas-gerry" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-theme-teal-DEFAULT dark:text-gray-400 dark:hover:text-theme-teal-textDark transition-colors" aria-label="LinkedIn">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zm-11 6H5v10h3V9zm-1.5-2A1.5 1.5 0 1 0 5 5.5a1.5 1.5 0 0 0 1.5 1.5zM19 9h-2.5v2h.5a1.5 1.5 0 0 1 1.5 1.5V19h-3v-5.5a.5.5 0 0 0-.5-.5h-1v6H8V9h3v1.5a3.5 3.5 0 0 1 3.5-1.5H19V9z"></path></svg>
+                    </a>
+                    <!-- WhatsApp -->
+                    <a href="https://wa.me/6282240800888" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-theme-teal-DEFAULT dark:text-gray-400 dark:hover:text-theme-teal-textDark transition-colors" aria-label="WhatsApp">
+                        <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 22L7.32 20.59C8.77 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2M12.04 3.67C16.56 3.67 20.28 7.38 20.28 11.91C20.28 16.44 16.56 20.15 12.04 20.15C10.5 20.15 9.04 19.76 7.77 19.03L7.3 18.77L4.47 19.53L5.25 16.8L4.97 16.31C4.16 14.91 3.79 13.37 3.79 11.91C3.79 7.38 7.51 3.67 12.04 3.67M17.27 14.24C17.09 14.73 16.05 15.27 15.7 15.31C15.35 15.36 14.97 15.37 14.65 15.2C14.28 15.02 13.57 14.78 12.72 13.98C11.66 13.01 11.01 11.82 10.82 11.53C10.63 11.24 10.48 11.08 10.29 10.87C10.11 10.67 9.94 10.5 9.77 10.3C9.6 10.1 9.42 9.92 9.27 9.77C9.11 9.61 9.02 9.42 8.92 9.24C8.82 9.05 8.73 8.88 8.68 8.7C8.6 8.41 8.52 8.14 8.52 7.86C8.52 7.58 8.61 7.33 8.8 7.15C8.98 6.97 9.21 6.83 9.43 6.83C9.53 6.83 9.61 6.84 9.69 6.86C9.8 6.88 9.9 7 10.03 7.22C10.16 7.45 10.29 7.7 10.36 7.8C10.44 7.91 10.5 8.04 10.54 8.1C10.6 8.24 10.59 8.38 10.5 8.53C10.42 8.68 10.28 8.85 10.15 8.98C10.03 9.12 9.93 9.23 9.84 9.3C9.76 9.37 9.68 9.46 9.62 9.53C9.56 9.6 9.51 9.66 9.51 9.73C9.51 9.8 9.57 9.9 9.67 10C9.77 10.09 9.9 10.22 10.07 10.39C10.44 10.78 10.87 11.23 11.39 11.7C11.96 12.22 12.49 12.63 12.98 12.93C13.1 12.99 13.2 13.04 13.29 13.07C13.38 13.1 13.46 13.1 13.53 13.1C13.6 13.1 13.7 13.05 13.81 12.94C13.91 12.83 14.02 12.69 14.12 12.56C14.23 12.42 14.36 12.33 14.5 12.33C14.65 12.33 14.83 12.4 15.11 12.58C15.39 12.76 15.61 13.02 15.72 13.16C15.82 13.3 15.9 13.41 15.95 13.52C16 13.63 16.02 13.8 15.97 14.01C15.91 14.22 17.09 14.73 17.09 14.73Z"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Tombol Navigasi -->
+        <button id="prev-slide" class="nav-button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button id="next-slide" class="nav-button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+        <!-- Counter Slide -->
+        <div id="slide-counter" class="slide-counter">
+            1 / 7
+        </div>
+
+        <!-- Tombol Dark Mode -->
+        <button id="theme-toggle" class="nav-button" style="top: 1.5rem; right: 1.5rem;">
+            <svg id="theme-icon-sun" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="theme-icon-moon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+
+    </div> <!-- End .slide-deck -->
+
+    <!-- === MODAL (POP-UP) KONTEN DETAIL === -->
+
+    <!-- Modal 1: Education Details -->
+    <div id="education-modal" class="modal hidden">
+        <div id="education-modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button id="close-edu-modal" class="modal-close-button">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 dark:text-white">
+                <span class="colorful-gradient-text">Education Details</span>
+            </h2>
+            <div class="space-y-8">
+                <!-- Kartu Master's Lengkap -->
+                <div class="bg-slate-50 dark:bg-gray-900 p-6 rounded-lg shadow-inner">
+                    <h3 class="text-2xl font-bold text-theme-teal-DEFAULT dark:text-theme-teal-textDark">Master of Education - MEd, Mathematics Education</h3>
+                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-1">Universitas Pendidikan Indonesia</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sep 2023 - Sep 2025 | Grade: 3.66 / 4.00 (Very Satisfactory)</p>
+                    <p class="mt-4 text-gray-700 dark:text-gray-300">
+                        Specializing in mixed-methods research to analyze and address complex challenges in mathematics pedagogy...
+                    </p>
+                    <ul class="list-disc list-outside ml-5 mt-4 text-gray-700 dark:text-gray-300 space-y-2">
+                        <li><strong>Thesis:</strong> "Configuration of Factors Affecting the Numeracy Achievement of High School Students in West Java"</li>
+                        <li><strong>Relevant Coursework:</strong> Quantitative Research Methods, Qualitative Research Methods, Research Data Analysis, Analysis of International Research Results.</li>
+                        <li><strong>Activities:</strong> Actively involved in the academic community as a moderator and speaker in various scientific forums, seminars, and workshops...</li>
+                    </ul>
+                </div>
+                <!-- Kartu Bachelor's Lengkap -->
+                <div class="bg-slate-50 dark:bg-gray-900 p-6 rounded-lg shadow-inner">
+                    <h3 class="text-2xl font-bold text-theme-teal-DEFAULT dark:text-theme-teal-textDark">Bachelor of Education - BEd, Mathematics Education</h3>
+                    <p class="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-1">Institut Keguruan dan Ilmu Pendidikan (IKIP) Siliwangi</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Aug 2017 - Mar 2022 | Grade: 3.33 / 4.00 (Very Satisfactory)</p>
+                    <p class="mt-4 text-gray-700 dark:text-gray-300">
+                        Graduated with a strong foundation in mathematics pedagogy, instructional design, and educational research...
+                    </p>
+                    <ul class="list-disc list-outside ml-5 mt-4 text-gray-700 dark:text-gray-300 space-y-2">
+                        <li><strong>Thesis:</strong> "Ethnomathematical Study Based on Bishop's Mathematical Fundamental Activities in Betawi Culture (Case Study: Pitung's Stilt House)"</li>
+                        <li><strong>Activities & Achievements:</strong>
+                            <ul class="list-circle list-outside ml-6 mt-1 space-y-1">
+                                <li>Awarded 1st Winner of Most Outstanding Student at IKIP Siliwangi (2020).</li>
+                                <li>Recognized as an Outstanding Student at the Higher Education Service Institution (LLDIKTI) Region IV West Java & Banten (2020).</li>
+                                <li>Served as Head of the Internal Department for the Student Executive Board (BEM)...</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Experience Details (Multi-Bidang & SANGAT DETAIL) -->
+    <div id="experience-modal" class="modal hidden">
+        <div id="experience-modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button id="close-exp-modal" class="modal-close-button">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 dark:text-white">
+                <span class="colorful-gradient-text">Full Professional Experience</span>
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                <!-- Kolom 1: Research & Academic -->
+                <div>
+                    <h3 class="text-2xl font-bold text-theme-teal-DEFAULT dark:text-theme-teal-textDark mb-6 border-b-2 border-theme-teal-DEFAULT/30 pb-2">
+                        Research & Academic
+                    </h3>
+                    <div class="space-y-6">
+                        <!-- Timeline dengan DETAIL -->
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-teal-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Aug 2024 - Present</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Peer Reviewer</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">IKIP Siliwangi</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Critically evaluated academic manuscripts on mathematics education.</li>
+                                <li>Provided constructive, detailed feedback to authors to guide improvement.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-teal-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Sep 2023 - Sep 2025</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Junior Research Fellow</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Universitas Pendidikan Indonesia</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Led and contributed to research projects in Mathematics Education (qualitative, quantitative, mixed-methods).</li>
+                                <li>Authored and co-authored several impactful papers.</li>
+                                <li>Led a training workshop on Scratch programming for 50 junior high school teachers.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-teal-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Jan 2024 - May 2024</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Mathematics Expert</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Emteka</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Collaborated with psychometrists and product developers to design a mathematics curriculum for an EdTech platform.</li>
+                                <li>Analyzed student performance data to identify learning gaps.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-teal-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Aug 2021 - Mar 2023</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Scientific Researcher (Tutor)</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">House Of Wisdom</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Designed and drafted the syllabus for a scientific article writing program.</li>
+                                <li>Mentored and tutored multiple student research groups.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-teal-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">2018 - May 2021</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Assistant Lecturer</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">IKIP Siliwangi</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Assisted in teaching advanced university courses in Research Methodologies and Numerical Methods.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-teal-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Aug 2020 - Dec 2020</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Mathematics Teacher</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">MTSS As-Syafi'iyah 01 Jakarta</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Taught 9th-grade Mathematics, developing lesson plans and assessment materials.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kolom 2: Corporate & Technical -->
+                <div>
+                    <h3 class="text-2xl font-bold text-theme-sky-DEFAULT dark:text-theme-sky-textDark mb-6 border-b-2 border-theme-sky-DEFAULT/30 pb-2">
+                        Corporate & Technical
+                    </h3>
+                    <div class="space-y-6">
+                        <!-- Timeline dengan DETAIL -->
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-sky-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-sky-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Jan 2023 - May 2023</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Sales Supervisor</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Felini Furniture</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Led and mentored a sales team to achieve revenue targets.</li>
+                                <li>Developed and implemented sales strategies by analyzing market trends.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-sky-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-sky-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Oct 2022 - Dec 2022</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Software Developer (Trainee)</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">BOSNET Distribution Indonesia</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Applied fundamental concepts of software development, including programming logic and system analysis.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-sky-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <div class="modal-timeline-line bg-theme-sky-DEFAULT/30"></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Mar 2020 - Jul 2021</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Librarian</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">IKIP Siliwangi</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Managed library information systems using Dewey Decimal Classification (DDC).</li>
+                            </ul>
+                        </div>
+                        <div class="modal-timeline-item">
+                            <div class="modal-timeline-icon bg-theme-sky-DEFAULT text-white"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg></div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Feb 2017 - Aug 2017</p>
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Expert Staff in Research and Election</h4>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Partai GOLKAR</p>
+                            <ul class="list-disc ml-5 mt-2 text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                <li>Conducted data collection and analysis on potential voters for campaign strategies.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Works, Awards, and ALL Certifications Details -->
+    <div id="works-modal" class="modal hidden">
+        <div id="works-modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button id="close-works-modal" class="modal-close-button">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 dark:text-white">
+                <span class="colorful-gradient-text">Full Works, Awards & Certifications</span>
+            </h2>
+            <div class="space-y-10">
+                
+                <!-- Bagian Publikasi -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 dark:text-white border-b-2 border-theme-teal-DEFAULT pb-2">Featured Publications</h3>
+                    <div class="space-y-4">
+                        <!-- INGAT: Ganti 'href' ini dengan link asli -->
+                        <div class="bg-slate-50 p-4 rounded-lg shadow-inner dark:bg-gray-900">
+                            <a href="https://drive.google.com/file/d/1-KkVV2g1uLQouTFhxYg8cjPaY_KbdwZT/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="font-semibold text-theme-teal-textLight hover:text-theme-teal-DEFAULT dark:text-theme-teal-textDark dark:hover:text-theme-teal-DEFAULT">MENGUNGKAP KOMPLEKSITAS KAUSAL: TINJAUAN SISTEMATIS DAN KRITIK TERHADAP PENDEKATAN LINEAR DALAM PENELITIAN PRESTASI MATEMATIKA</a>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg shadow-inner dark:bg-gray-900">
+                            <a href="https://journal.ikipsiliwangi.ac.id/index.php/jpmi/article/download/6627/2279" target="_blank" rel="noopener noreferrer" class="font-semibold text-theme-teal-textLight hover:text-theme-teal-DEFAULT dark:text-theme-teal-textDark dark:hover:text-theme-teal-DEFAULT">
+PENGEMBANGAN BAHAN AJAR TRIGONOMETRI BERBASIS ANIMASI PADA MASA PANDEMI COVID-19</a>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg shadow-inner dark:bg-gray-900">
+                            <a href="https://journal.ikipsiliwangi.ac.id/index.php/jpmi/article/download/10169/3403" target="_blank" rel="noopener noreferrer" class="font-semibold text-theme-teal-textLight hover:text-theme-teal-DEFAULT dark:text-theme-teal-textDark dark:hover:text-theme-teal-DEFAULT">
+EKSPLORASI ETNOMATEMATIKA RUMAH PANGGUNG BETAWI SI PITUNG DALAM PANDANGAN AKTIVITAS FUNDAMENTAL MATEMATIS BISHOP</a>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg shadow-inner dark:bg-gray-900">
+                            <a href="https://iopscience.iop.org/article/10.1088/1742-6596/1318/1/012035" target="_blank" rel="noopener noreferrer" class="font-semibold text-theme-teal-textLight hover:text-theme-teal-DEFAULT dark:text-theme-teal-textDark dark:hover:text-theme-teal-DEFAULT">
+IMPROVE THE ABILITY OF UNDERSTANDING MATHEMATICS AND CONFIDENCE OF ELEMENTARY SCHOOL STUDENTS WITH A CONTEXTUAL APPROACH USING VBA LEARNING MEDIA FOR MICROSOFT EXCEL</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bagian Penghargaan -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 dark:text-white border-b-2 border-theme-sky-DEFAULT pb-2">Awards (Puspresnas Verified)</h3>
+                    <ul class="list-disc list-outside ml-5 space-y-3">
+                        <!-- INGAT: Ganti 'href' ini dengan link asli -->
+                        <li><a href="https://kurasi-prestasi.kemendikdasmen.go.id/uploads/certificate/gerry-filiestianto-certificate-2023-06-15-103951.pdf" target="_blank" class="font-medium text-theme-sky-textLight hover:text-theme-sky-DEFAULT dark:text-theme-sky-textDark dark:hover:text-theme-sky-DEFAULT transition-colors">
+3rd Winner of National Mathematics Learning Media Competitions @ GMM UPI 2018</a></li>
+                        <li><a href="https://kurasi-prestasi.kemendikdasmen.go.id/uploads/certificate/gerry-filiestianto-certificate-2023-06-15-103520.pdf" target="_blank" class="font-medium text-theme-sky-textLight hover:text-theme-sky-DEFAULT dark:text-theme-sky-textDark dark:hover:text-theme-sky-DEFAULT transition-colors">
+2nd Runner Up of National Mathematics Learning Media Competition @ LMPCPM UNNES 2019</a></li>
+                        <li><a href="https://kurasi-prestasi.kemendikdasmen.go.id/uploads/certificate/gerry-filiestianto-certificate-2023-06-15-100301.pdf" target="_blank" class="font-medium text-theme-sky-textLight hover:text-theme-sky-DEFAULT dark:text-theme-sky-textDark dark:hover:text-theme-sky-DEFAULT transition-colors">
+Finalist of National Learning Media Competition @ AGP FKIP UNS 2018</a></li>
+                        <li><a href="https://kurasi-prestasi.kemendikdasmen.go.id/uploads/certificate/gerry-filiestianto-certificate-2023-06-15-102502.pdf" target="_blank" class="font-medium text-theme-sky-textLight hover:text-theme-sky-DEFAULT dark:text-theme-sky-textDark dark:hover:text-theme-sky-DEFAULT transition-colors">Finalist of National Learning Media Competition @ AGP FKIP UNS 2019</a></li>
+                        <li><a href="https://kurasi-prestasi.kemendikdasmen.go.id/uploads/certificate/gerry-filiestianto-certificate-2023-06-15-104048.pdf" target="_blank" class="font-medium text-theme-sky-textLight hover:text-theme-sky-DEFAULT dark:text-theme-sky-textDark dark:hover:text-theme-sky-DEFAULT transition-colors">Finalist of National Mathematics Learning Media Essay Competition @ MEF#5 HMPS Pendidikan Matematika UAD 2019</a></li>
+                    </ul>
+                </div>
+
+                <!-- Bagian Sertifikasi (LENGKAP) -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 dark:text-white border-b-2 border-theme-amber-DEFAULT pb-2">Licenses & Certifications</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        
+                        <!-- Kategori: Research & Data -->
+                        <div>
+                            <h4 class="text-lg font-bold text-theme-teal-textLight dark:text-theme-teal-textDark mb-4">Research & Data</h4>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-sm">
+                                <!-- INGAT: Ganti 'href' ini dengan link asli -->
+                                <li><a href="https://coursera.org/verify/7C4BQ6WJFEVR" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Research Proposal: Initiating Research (Coursera)</a></li>
+                                <li><a href="https://drive.google.com/file/d/1BA0SE4ExkAPBAuPlnFPcSNrS_Rq-oOn7/view?usp=drivesdk" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Metodologi Penelitian NVIVO12 (Universitas Terbuka)</a></li>
+                                <li><a href="https://drive.google.com/file/d/1AnamKau9_GR_oY6tWhMRfqovIt9Uur8G/view?usp=drivesdk" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Etika Penelitian dan Publikasi (Universitas Terbuka)</a></li>
+                                <li><a href="https://drive.google.com/file/d/1BJUPoW69-m6KUqdxPo5YWisWfR4BjBRN/view?usp=drivesdk" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Pengantar Pengajaran Metode Penelitian (Universitas Terbuka)</a></li>
+                                <li><a href="https://drive.google.com/file/d/1B3NiJxPXo3K7Zy_D_tCnhWSYVGVSSyxn/view?usp=drivesdk" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Menulis Artikel Berkualitas (Universitas Terbuka)</a></li>
+                                <li><a href="https://drive.google.com/file/d/1B3NiJxPXo3K7Zy_D_tCnhWSYVGVSSyxn/view?usp=drivesdk" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Menulis Artikel Laik Publikasi (Universitas Terbuka)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=436bd059aef6e15178f027fa2b7082460a6c3a55" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Succeeding in Postgraduate Study (The Open University)</a></li>
+                                <li><a href="https://coursera.org/verify/3DW3EJ9AUSMR" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">What is Data Science? (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/8X5ZLXFZP642" target="_blank" class="font-medium text-gray-700 hover:text-theme-teal-DEFAULT dark:text-gray-300 dark:hover:text-theme-teal-textDark transition-colors">Tools for Data Science (Coursera)</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Kategori: IT & Technical -->
+                        <div>
+                            <h4 class="text-lg font-bold text-theme-sky-textLight dark:text-theme-sky-textDark mb-4">IT & Technical</h4>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-sm">
+                                <li><a href="https://coursera.org/verify/professional-cert/EFU4WY5JCM8U" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Google IT Support Specialization (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/38C33QW4PHTC" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">System Administration and IT Infrastructure Services (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/72U6H2L7ZB3J" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">IT Security: Defense against the digital dark arts (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/8LZR6GA45FN5" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Operating System and You: Becoming a Power User (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/GYWXNC46WHKL" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Technical Support Fundamentals (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/TQGT47K35H43" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">The Bits and Bytes of Computer Networking (Coursera)</a></li>
+                                <li><a href="https://certificates.mooc.fi/validate/lx99lkudkx" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Elements of Artificial Intelligence (University of Helsinki)</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Kategori: HR, Management & Leadership -->
+                        <div>
+                            <h4 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">HR & Management</h4>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-sm">
+                                <li><a href="https://coursera.org/verify/professional-cert/3W4H6X34AVJL" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Human Resource Management: HR for People Managers Specialization (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/NC477KA6RQC6" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Recruiting, Hiring, and Onboarding Employees (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/LTUBJ7TQH84M" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Managing Employee Performance (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/99V26LAFCSYT" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Managing Employee Compensation (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/F9JWE6Z6SNAN" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Preparing to Manage Human Resources (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/B6GQK8L4YMP8" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Human Resources Management Capstone (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/XXNZYGLCDALD" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Project Management: The Basics for Success (Coursera)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=77baa7eac5bbfcd90a646064b100d1f16ebd3467" target="_blank" class="font-medium text-gray-700 hover:text-theme-sky-DEFAULT dark:text-gray-300 dark:hover:text-theme-sky-textDark transition-colors">Leadership and Followership (The Open University)</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Kategori: Marketing & General Skills -->
+                        <div>
+                            <h4 class="text-lg font-bold text-theme-amber-textLight dark:text-theme-amber-textDark mb-4">Marketing & General Skills</h4>
+                            <ul class="list-disc list-outside ml-5 space-y-2 text-sm">
+                                <li><a href="https://learndigital.withgoogle.com/link/1qsdpcedm9s" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Fundamentals of Digital Marketing (Google Digital Garage)</a></li>
+                                <li><a href="https://coursera.org/verify/CDHCRR5DUGZ8" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Digital Media and Marketing Principles (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/LRHBJCGYPJE7" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Storytelling and influencing: Communicate with impact (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/6XKVKFSBZ3QA" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Corporate Sustainability (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/7JUVKS9HKGW4" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Strategy and Sustainability (Coursera)</a></li>
+                                <li><a href="https://coursera.org/verify/CSGWLC8AFKGX" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Sustainable Development in the 21st Century (Coursera)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=a90ca440dfdb9166cabb0817db77618e6b186d02" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Effective Communication in The Workplace (The Open University)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=07a7d7250816b7c6fec21645e6c41ee50b384f0e" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Exploring Career Mentoring and Coaching (The Open University)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=1ddb5ab0f39e4b683fe50cf7d68b06db9c925518" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Personal Branding for Career Success (The Open University)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=6f10bfb02cdbeb01557dbe8cc73bf77bdbf9b8f5" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Succeed in The Workplace (The Open University)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=d755ddab79c44cfbca3734e5b4ec3b236ea84973" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Understanding Your Sector (The Open University)</a></li>
+                                <li><a href="https://www.open.edu/openlearn/badges/badge.php?hash=0ae4fdc7b798b1142b5671f335c7bba476751c87" target="_blank" class="font-medium text-gray-700 hover:text-theme-amber-DEFAULT dark:text-gray-300 dark:hover:text-theme-amber-textDark transition-colors">Working in Diverse Teams (The Open University)</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JavaScript untuk Navigasi, Dark Mode & Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // === LOGIKA SLIDE ===
+            const slides = document.querySelectorAll('.slide');
+            const prevButton = document.getElementById('prev-slide');
+            const nextButton = document.getElementById('next-slide');
+            const slideCounter = document.getElementById('slide-counter');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('active', 'exiting');
+                    if (i === currentSlide && i !== index) {
+                        slide.classList.add('exiting');
+                    }
+                });
+                slides[index].classList.add('active');
+                currentSlide = index;
+                prevButton.disabled = currentSlide === 0;
+                nextButton.disabled = currentSlide === totalSlides - 1;
+                slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+            }
+            nextButton.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1);
+            });
+            prevButton.addEventListener('click', () => {
+                if (currentSlide > 0) showSlide(currentSlide - 1);
+            });
+            showSlide(0);
+
+            // === LOGIKA DARK MODE ===
+            const themeToggle = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+            const htmlEl = document.documentElement;
+
+            const updateIcons = (isDarkMode) => {
+                sunIcon.style.display = isDarkMode ? 'none' : 'block';
+                moonIcon.style.display = isDarkMode ? 'block' : 'none';
+            };
+            const toggleTheme = () => {
+                const isDarkMode = htmlEl.classList.toggle('dark');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+                updateIcons(isDarkMode);
+            };
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                htmlEl.classList.add('dark');
+                updateIcons(true);
+            } else {
+                htmlEl.classList.remove('dark');
+                updateIcons(false);
+            }
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // === LOGIKA MODAL (POP-UP) ===
+            // Fungsi umum untuk modal
+            function setupModal(openButtonId, modalId, closeButtonId, backdropId) {
+                const openButton = document.getElementById(openButtonId);
+                const modal = document.getElementById(modalId);
+                const closeButton = document.getElementById(closeButtonId);
+                const backdrop = document.getElementById(backdropId);
+
+                if (openButton) {
+                    openButton.addEventListener('click', () => modal.classList.remove('hidden'));
+                }
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => modal.classList.add('hidden'));
+                }
+                if (backdrop) {
+                    backdrop.addEventListener('click', () => modal.classList.add('hidden'));
+                }
+            }
+
+            // Inisialisasi TIGA modal
+            setupModal('open-edu-modal', 'education-modal', 'close-edu-modal', 'education-modal-backdrop');
+            setupModal('open-exp-modal', 'experience-modal', 'close-exp-modal', 'experience-modal-backdrop');
+            setupModal('open-works-modal', 'works-modal', 'close-works-modal', 'works-modal-backdrop');
+        });
+    </script>
+</body>
+</html>
+
